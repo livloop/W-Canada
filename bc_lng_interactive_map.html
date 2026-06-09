@@ -32,6 +32,17 @@ h1{font-size:26px;font-weight:800}h1 em{color:var(--gold);font-style:italic}
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#13202b;color:#e8eef2;border:1px solid #23353f}
 .leaflet-popup-content b{color:#e8b04b}.lbl{background:none;border:none;box-shadow:none;color:#10202a;font-weight:600;font-size:11px;text-shadow:0 0 3px #fff,0 0 3px #fff}
 .lbl-t{color:#06243a;font-weight:700;font-size:12px}.lbl-fn{font-style:italic;font-size:12px}
+.legend{background:rgba(10,15,19,.82);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink);font-size:11px;line-height:1.3;max-width:236px;box-shadow:0 2px 12px #0007;backdrop-filter:blur(2px)}
+.legend h4{font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--gold);margin:9px 0 4px;font-family:monospace}
+.legend h4:first-child{margin-top:0}
+.legend .li{display:flex;align-items:center;gap:8px;padding:1.5px 0}
+.legend .li>span:last-child{flex:1}
+.legend .sym{flex:0 0 30px;display:flex;align-items:center;justify-content:center}
+.legend .dot{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid #fff}
+.legend .dia{flex:none;width:10px;height:10px;transform:rotate(45deg);border:1.5px solid #5a4012}
+.legend .rect{flex:none}
+.legend .rect{width:18px;height:11px;border-radius:2px}
+.legend .note{margin-top:9px;padding-top:7px;border-top:1px solid #ffffff1a;font-style:italic;color:var(--ink2);font-size:10px;line-height:1.45}
 </style></head><body><!-- Self-contained: layers.js is embedded inline. Edit the LNG_LAYERS object below to update data. -->
 <div class="wrap">
 <h1>Western Canada LNG — <em>GIS Map</em></h1>
@@ -126,4 +137,38 @@ gMont.addTo(map);gNGTL.addTo(map);gPipe.addTo(map);gFN.addTo(map);
 L.control.layers({'Topographic (Esri)':topo,'Street (OSM)':osm,'Satellite (Esri)':imagery},
  {'Montney basin':gMont,'NGTL & Westcoast':gNGTL,'Project pipelines & terminals':gPipe,'First Nations':gFN},{collapsed:false}).addTo(map);
 L.control.scale({imperial:false}).addTo(map);
+// Fixed on-map legend (bottom-right) — colors/styles mirror the layer styling above.
+(function(){
+ const ln=(c,w,d)=>'<svg width="30" height="11"><line x1="2" y1="5.5" x2="28" y2="5.5" stroke="'+c+'" stroke-width="'+w+'"'+(d?' stroke-dasharray="'+d+'" stroke-linecap="round"':'')+'/></svg>';
+ const dot=c=>'<span class="dot" style="background:'+c+'"></span>';
+ const dia=c=>'<span class="dia" style="background:'+c+'"></span>';
+ const rect=(f,b,dash)=>'<span class="rect" style="background:'+f+';border:1px '+(dash?'dashed':'solid')+' '+b+'"></span>';
+ const sm=t=>' <small style="color:#6d8593">'+t+'</small>';
+ const row=(sym,label)=>'<div class="li"><span class="sym">'+sym+'</span><span>'+label+'</span></div>';
+ const html=
+   '<h4>Pipelines &amp; systems</h4>'
+  +row(ln('#e8651f',3),'NGTL network'+sm('existing'))
+  +row(ln('#2f6fb0',2.6),'Westcoast BC pipeline'+sm('existing'))
+  +row(ln('#1f6dd0',4),'Coastal GasLink'+sm('operational'))
+  +row(ln('#119b8c',3.6,'10 6'),'PRGT'+sm('proposed/building'))
+  +row(ln('#8a4fc0',3,'2 7'),'Pacific Trails'+sm('legacy/dormant'))
+  +row(ln('#d99411',2.4,'7 5'),'Nass Valley power'+sm('proposed'))
+  +'<h4>Terminals &amp; hubs</h4>'
+  +row(dot('#2ca85e'),'Operational terminal')
+  +row(dot('#1f6dd0'),'Pre-FID terminal')
+  +row(dot('#8a4fc0'),'Early-stage terminal')
+  +row(dia('#e8b04b'),'Gas trade hub'+sm('Station 2, AECO'))
+  +'<h4>First Nations territories</h4>'
+  +row(rect('rgba(44,168,94,.28)','#1f7a44'),'Owner / proponent')
+  +row(rect('rgba(226,102,79,.28)','#b23c28'),'Opposed / contested')
+  +row(rect('rgba(232,176,75,.28)','#b8862a'),'Production area'+sm('Treaty 8'))
+  +row(rect('rgba(91,134,176,.28)','#3a5f86'),'Other along route')
+  +'<h4>Montney basin</h4>'
+  +row(rect('rgba(232,176,75,.16)','#b8862a',true),'Feed-gas fairway')
+  +'<div class="note">Pipeline corridors &amp; territory boundaries are indicative, not survey/GIS-exact or legal.</div>';
+ const ctl=L.control({position:'bottomright'});
+ ctl.onAdd=function(){const div=L.DomUtil.create('div','legend');div.innerHTML=html;
+   L.DomEvent.disableClickPropagation(div);L.DomEvent.disableScrollPropagation(div);return div;};
+ ctl.addTo(map);
+})();
 </script></body></html>
